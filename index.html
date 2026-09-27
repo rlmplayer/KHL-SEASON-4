@@ -373,6 +373,40 @@ table.standings tr.zone-out{ background:var(--red-bg); }
 .club-pick-item.selected{ border-color:var(--accent); background:var(--accent-glow-soft); color:var(--accent); }
 .club-pick-item .logo{ width:22px; height:22px; border-radius:5px; object-fit:cover; flex-shrink:0; background:var(--bg-panel-3); }
 .skip-link{ display:block; text-align:center; margin-top:14px; font-size:12.5px; color:var(--text-dim-2); background:none; border:none; cursor:pointer; text-decoration:underline; width:100%; }
+
+/* ---- звёздочка любимого клуба ---- */
+.logo-wrap{ position:relative; display:inline-flex; flex-shrink:0; }
+.fav-star{
+  position:absolute; top:-5px; right:-5px; font-size:9px; line-height:1;
+  color:#1a1200; background:#facc15; width:14px; height:14px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; box-shadow:0 0 0 1px rgba(0,0,0,.45);
+}
+
+/* ---- клик по эмблеме в расписании ---- */
+.logo-click{ cursor:pointer; display:inline-flex; border-radius:8px; }
+.logo-click:hover .logo{ box-shadow:0 0 0 2px var(--accent); }
+.logo-click:hover .logo.placeholder{ box-shadow:0 0 0 2px var(--accent); }
+
+/* ---- подсветка матча, на который перешли по ссылке ---- */
+.highlight-match{ box-shadow:0 0 0 2px var(--accent), 0 0 24px -4px var(--accent-glow) !important; }
+
+/* ---- кнопка "поделиться" рядом с матчем ---- */
+.share-btn{
+  flex-shrink:0; width:28px; height:28px; border-radius:8px; border:1px solid var(--line);
+  background:var(--bg-panel-3); color:var(--text-dim); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:color .15s ease, border-color .15s ease; margin-left:2px;
+}
+.share-btn svg{ width:14px; height:14px; }
+.share-btn:hover{ color:var(--accent); border-color:var(--accent-border-soft); }
+.share-btn.copied{ color:var(--green); border-color:rgba(55,201,119,.4); }
+
+/* ---- модалка расписания клуба ---- */
+.club-sched-item{ margin-bottom:2px; }
+.club-sched-stage{ font-size:10.5px; color:var(--text-dim-2); font-weight:700; text-transform:uppercase; letter-spacing:.4px; margin:12px 2px 4px; }
+.club-sched-header{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.club-sched-header img{ width:46px; height:46px; border-radius:11px; object-fit:cover; background:var(--bg-panel-3); }
+.club-sched-header h3{ font-size:18px; }
+.club-sched-list{ max-height:360px; overflow-y:auto; padding-right:2px; }
 </style>
 </head>
 <body>
@@ -571,6 +605,22 @@ table.standings tr.zone-out{ background:var(--red-bg); }
   </div>
 </div>
 
+<!-- Модальное окно расписания конкретного клуба (открывается по клику на эмблему в Расписании) -->
+<div class="modal-overlay" id="clubScheduleModal">
+  <div class="modal-card wide">
+    <button class="modal-close" onclick="closeClubScheduleModal()">✕</button>
+    <div class="club-sched-header">
+      <img id="clubSchedModalLogo" src="" alt="">
+      <h3 id="clubSchedModalName"></h3>
+    </div>
+    <div class="mode-toggle" id="clubScheduleTabs">
+      <button data-tab="past" class="active" onclick="setClubScheduleTab('past')">Прошедшие</button>
+      <button data-tab="future" onclick="setClubScheduleTab('future')">Будущие</button>
+    </div>
+    <div class="club-sched-list" id="clubScheduleContent"></div>
+  </div>
+</div>
+
 <script>
 /* ############################################################################
    #                                                                          #
@@ -652,7 +702,7 @@ const DATA = {
   ],
 
   /* ---------------------------------------------------------------------
-     4. РАСПИСАНИЕ — РЕГУЛЯРНЫЙ ЧЕМПИОНАТ (11 туров)
+     4. РАСПИСАНИЕ — РЕГУЛЯРНЫЙ ЧЕМПИОНАТ (21 тур)
      В каждом туре — список игр (games). У каждой игры:
        home / away        — id клубов (см. список id выше)
        homeScore/awayScore— заброшенные шайбы (null, если матч не сыгран)
@@ -803,6 +853,136 @@ const DATA = {
       { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
       { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
       { home:null,        away:null,           homeScore:null, awayScore:null, note:null }
+    ]},
+    { tour: 12,  games: [
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null }
+    ]},
+    { tour: 13,  games: [
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null }
+    ]},
+    { tour: 14,  games: [
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null }
+    ]},
+    { tour: 15,  games: [
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null }
+    ]},
+    { tour: 16,  games: [
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null }
+    ]},
+    { tour: 17,  games: [
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null }
+    ]},
+    { tour: 18,  games: [
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null }
+    ]},
+    { tour: 19,  games: [
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null }
+    ]},
+    { tour: 20,  games: [
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null }
+    ]},
+    { tour: 21,  games: [
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null },
+      { home:null,        away:null,           homeScore:null, awayScore:null, note:null }
     ]}
   ],
 
@@ -932,13 +1112,18 @@ const DATA = {
 const ALL_CLUBS = [...DATA.clubs.west, ...DATA.clubs.east];
 function getClub(id){ return ALL_CLUBS.find(c => c.id === id) || null; }
 
-function logoHtml(club, size){
+function logoHtml(club, size, showStar){
   size = size || 30;
+  const isFav = !!(showStar && club && settings && settings.favoriteClub === club.id);
+  const starHtml = isFav ? `<span class="fav-star" title="Любимый клуб">★</span>` : "";
+  let inner;
   if (club && club.logo){
-    return `<img class="logo" src="${club.logo}" alt="${club.name}" style="width:${size}px;height:${size}px;">`;
+    inner = `<img class="logo" src="${club.logo}" alt="${club.name}" style="width:${size}px;height:${size}px;">`;
+  } else {
+    const initials = club ? club.name.slice(0,2).toUpperCase() : "?";
+    inner = `<div class="logo placeholder" style="width:${size}px;height:${size}px;">${initials}</div>`;
   }
-  const initials = club ? club.name.slice(0,2).toUpperCase() : "?";
-  return `<div class="logo placeholder" style="width:${size}px;height:${size}px;">${initials}</div>`;
+  return `<span class="logo-wrap" style="width:${size}px;height:${size}px;">${inner}${starHtml}</span>`;
 }
 
 const STAGE_LABELS = { "1/8":"1/8 финала", "1/4":"1/4 финала", "1/2":"1/2 финала", "final":"Финал", "thirdPlace":"Матч за 3-е место" };
@@ -1059,13 +1244,25 @@ document.querySelectorAll("#scheduleModeToggle button").forEach(b => b.addEventL
   renderScheduleContent();
 }));
 
-function gameCardHtml(home, away, homeScore, awayScore, note){
+const SHARE_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.6" x2="15.4" y2="6.4"/><line x1="8.6" y1="13.4" x2="15.4" y2="17.6"/></svg>`;
+const CHECK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+function gameCardHtml(home, away, homeScore, awayScore, note, matchId){
   const h = getClub(home), a = getClub(away);
   const played = homeScore !== null && homeScore !== undefined;
+  const homeLogo = h
+    ? `<span class="logo-click" onclick="openClubScheduleModal('${home}')">${logoHtml(h, 30, true)}</span>`
+    : logoHtml(h, 30, true);
+  const awayLogo = a
+    ? `<span class="logo-click" onclick="openClubScheduleModal('${away}')">${logoHtml(a, 30, true)}</span>`
+    : logoHtml(a, 30, true);
+  const shareBtn = matchId
+    ? `<button class="share-btn" title="Скопировать ссылку на матч" onclick="shareMatch('${matchId}', this)">${SHARE_ICON}</button>`
+    : "";
   return `
-    <div class="game-card">
+    <div class="game-card"${matchId ? ` data-match-id="${matchId}"` : ""}>
       <div class="game-team">
-        ${logoHtml(h, 30)}
+        ${homeLogo}
         <span class="name">${h ? h.name : "—"}</span>
       </div>
       <div class="game-score">
@@ -1075,9 +1272,10 @@ function gameCardHtml(home, away, homeScore, awayScore, note){
         ${note ? `<span class="game-note">${note}</span>` : ""}
       </div>
       <div class="game-team right">
-        ${logoHtml(a, 30)}
+        ${awayLogo}
         <span class="name">${a ? a.name : "—"}</span>
       </div>
+      ${shareBtn}
     </div>
   `;
 }
@@ -1087,16 +1285,16 @@ function renderScheduleContent(){
   if (scheduleMode === "regular"){
     const tour = DATA.scheduleRegular.find(t => t.tour === scheduleTour);
     el.innerHTML = (tour && tour.games.length)
-      ? tour.games.map(g => gameCardHtml(g.home, g.away, g.homeScore, g.awayScore, g.note)).join("")
+      ? tour.games.map((g, gi) => gameCardHtml(g.home, g.away, g.homeScore, g.awayScore, g.note, `regular-${tour.tour}-${gi}`)).join("")
       : `<div class="empty-hint">Игры этого тура ещё не добавлены</div>`;
   } else {
     const series = DATA.schedulePlayoff[scheduleStage] || [];
     if (!series.length){ el.innerHTML = `<div class="empty-hint">Пары этой стадии ещё не определены</div>`; return; }
-    el.innerHTML = series.map(s => {
+    el.innerHTML = series.map((s, si) => {
       const h = getClub(s.home), a = getClub(s.away);
       const wins = seriesWins(s.games);
       const gamesHtml = s.games.length
-        ? s.games.map(g => gameCardHtml(s.home, s.away, g.homeScore, g.awayScore, g.note)).join("")
+        ? s.games.map((g, gi) => gameCardHtml(s.home, s.away, g.homeScore, g.awayScore, g.note, `playoff-${encodeURIComponent(scheduleStage)}-${si}-${gi}`)).join("")
         : `<div class="empty-hint">Матчи серии ещё не добавлены</div>`;
       return `
         <div class="series-block">
@@ -1119,6 +1317,138 @@ function seriesWins(games){
   return { home, away };
 }
 
+/* ---------------- РАСПИСАНИЕ ОТДЕЛЬНОГО КЛУБА (клик по эмблеме) ---------------- */
+let clubScheduleTab = "past";
+let clubScheduleClubId = null;
+
+function getClubGames(clubId){
+  const past = [];
+  const future = [];
+  DATA.scheduleRegular.forEach(t => {
+    t.games.forEach(g => {
+      if (g.home !== clubId && g.away !== clubId) return;
+      const entry = { home:g.home, away:g.away, homeScore:g.homeScore, awayScore:g.awayScore, note:g.note, stageLabel:`Тур ${t.tour}` };
+      const played = g.homeScore !== null && g.homeScore !== undefined;
+      (played ? past : future).push(entry);
+    });
+  });
+  PLAYOFF_ORDER.forEach(stage => {
+    (DATA.schedulePlayoff[stage] || []).forEach(s => {
+      if (s.home !== clubId && s.away !== clubId) return;
+      if (!s.games.length){
+        future.push({ home:s.home, away:s.away, homeScore:null, awayScore:null, note:null, stageLabel:STAGE_LABELS[stage] });
+        return;
+      }
+      s.games.forEach(g => {
+        const entry = { home:s.home, away:s.away, homeScore:g.homeScore, awayScore:g.awayScore, note:g.note, stageLabel:STAGE_LABELS[stage] };
+        const played = g.homeScore !== null && g.homeScore !== undefined;
+        (played ? past : future).push(entry);
+      });
+    });
+  });
+  return { past, future };
+}
+
+function openClubScheduleModal(clubId){
+  const c = getClub(clubId);
+  if (!c) return;
+  clubScheduleClubId = clubId;
+  clubScheduleTab = "past";
+  document.getElementById("clubSchedModalLogo").src = c.logo || DATA.league.logo;
+  document.getElementById("clubSchedModalName").textContent = c.name;
+  renderClubScheduleTabs();
+  renderClubScheduleContent();
+  document.getElementById("clubScheduleModal").classList.add("open");
+}
+function closeClubScheduleModal(){ document.getElementById("clubScheduleModal").classList.remove("open"); }
+document.getElementById("clubScheduleModal").addEventListener("click", (e) => {
+  if (e.target.id === "clubScheduleModal") closeClubScheduleModal();
+});
+function setClubScheduleTab(tab){
+  clubScheduleTab = tab;
+  renderClubScheduleTabs();
+  renderClubScheduleContent();
+}
+function renderClubScheduleTabs(){
+  document.querySelectorAll("#clubScheduleTabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === clubScheduleTab));
+}
+function renderClubScheduleContent(){
+  const el = document.getElementById("clubScheduleContent");
+  if (!clubScheduleClubId){ el.innerHTML = ""; return; }
+  const { past, future } = getClubGames(clubScheduleClubId);
+  const list = clubScheduleTab === "past" ? past : future;
+  el.innerHTML = list.length
+    ? list.map(entry => `
+        <div class="club-sched-item">
+          <div class="club-sched-stage">${entry.stageLabel}</div>
+          ${gameCardHtml(entry.home, entry.away, entry.homeScore, entry.awayScore, entry.note)}
+        </div>
+      `).join("")
+    : `<div class="empty-hint">${clubScheduleTab === "past" ? "Прошедших матчей пока нет" : "Будущих матчей пока нет"}</div>`;
+}
+
+/* ---------------- ПОДЕЛИТЬСЯ ССЫЛКОЙ НА МАТЧ ---------------- */
+function getMatchShareUrl(matchId){
+  return `${location.origin}${location.pathname}#match=${matchId}`;
+}
+function copyTextFallback(text){
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try{ document.execCommand("copy"); }catch(e){}
+  document.body.removeChild(ta);
+}
+function shareMatch(matchId, btnEl){
+  const url = getMatchShareUrl(matchId);
+  const showCopied = () => {
+    if (!btnEl) return;
+    const original = btnEl.innerHTML;
+    btnEl.classList.add("copied");
+    btnEl.innerHTML = CHECK_ICON;
+    setTimeout(() => { btnEl.classList.remove("copied"); btnEl.innerHTML = original; }, 1500);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(showCopied).catch(() => { copyTextFallback(url); showCopied(); });
+  } else {
+    copyTextFallback(url);
+    showCopied();
+  }
+}
+function handleShareHash(){
+  const raw = location.hash || "";
+  const m = raw.match(/^#match=(.+)$/);
+  if (!m) return;
+  const matchId = m[1];
+  const parts = matchId.split("-");
+  if (parts[0] === "regular"){
+    const tourNum = parseInt(parts[1], 10);
+    if (!DATA.scheduleRegular.find(t => t.tour === tourNum)) return;
+    scheduleMode = "regular";
+    scheduleTour = tourNum;
+  } else if (parts[0] === "playoff"){
+    const stage = decodeURIComponent(parts[1]);
+    if (!DATA.schedulePlayoff[stage]) return;
+    scheduleMode = "playoff";
+    scheduleStage = stage;
+  } else {
+    return;
+  }
+  goToPage("schedule");
+  renderScheduleControls();
+  renderScheduleContent();
+  setTimeout(() => {
+    const el = document.querySelector(`[data-match-id="${matchId}"]`);
+    if (el){
+      el.scrollIntoView({ behavior:"smooth", block:"center" });
+      el.classList.add("highlight-match");
+      setTimeout(() => el.classList.remove("highlight-match"), 2500);
+    }
+  }, 60);
+}
+
 /* ---------------- ТУРНИРНАЯ ТАБЛИЦА ---------------- */
 let standingsMode = "regular";
 
@@ -1137,7 +1467,7 @@ function standingsTableHtml(title, rows){
     return `
       <tr class="${zone}">
         <td>${idx+1}</td>
-        <td class="team-col">${logoHtml(c, 22)}<span>${c ? c.name : r.clubId}</span></td>
+        <td class="team-col">${logoHtml(c, 22, true)}<span>${c ? c.name : r.clubId}</span></td>
         <td class="pts">${r.points}</td>
         <td>${r.games}</td>
         <td>${r.wins}</td>
@@ -1170,11 +1500,11 @@ function bracketMatchupHtml(home, away, homeWins, awayWins, isFinal){
   return `
     <div class="matchup ${isFinal ? "final" : ""}">
       <div class="row ${hWin ? "winner" : ""}">
-        <div class="team">${logoHtml(h, 22)}<span>${h ? h.name : "TBD"}</span></div>
+        <div class="team">${logoHtml(h, 22, true)}<span>${h ? h.name : "TBD"}</span></div>
         <div class="win">${homeWins}</div>
       </div>
       <div class="row ${aWin ? "winner" : ""}">
-        <div class="team">${logoHtml(a, 22)}<span>${a ? a.name : "TBD"}</span></div>
+        <div class="team">${logoHtml(a, 22, true)}<span>${a ? a.name : "TBD"}</span></div>
         <div class="win">${awayWins}</div>
       </div>
     </div>
@@ -1350,6 +1680,7 @@ renderScheduleControls();
 renderScheduleContent();
 renderStandingsContent();
 initSettingsAndTheme();
+handleShareHash();
 </script>
 </body>
 </html>
