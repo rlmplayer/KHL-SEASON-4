@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Статистика · КХЛ SEASON 4</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="stats-manifest.webmanifest">
+<meta name="theme-color" content="#04060a">
+<link rel="icon" type="image/png" sizes="192x192" href="stats-192.png">
+<link rel="apple-touch-icon" href="stats-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Статистика">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04060a; --panel:#0a0e16; --panel2:#10161f; --panel3:#141b26; --line:#1c2632;
+  --accent:#4db2ff; --accent2:#1c78d1; --glow:rgba(77,178,255,.45); --glow-soft:rgba(77,178,255,.16);
+  --text:#eef3fa; --dim:#92a3b8; --dim2:#5d6c80; --green:#37c977; --red:#ff5d6c;
+}
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(43,110,190,.16), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 0%, rgba(43,110,190,.10), transparent 55%),
+    var(--bg);
+  color:var(--text); font-family:'Manrope',sans-serif; min-height:100vh; -webkit-font-smoothing:antialiased;
+  padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);
+}
+h1,h2,h3{ font-family:'Oswald',sans-serif; margin:0; letter-spacing:.2px; }
+.wrap{ max-width:980px; margin:0 auto; padding:22px 18px 60px; }
+.head{ display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+.head img{ width:46px; height:46px; border-radius:11px; box-shadow:0 0 0 1px var(--line), 0 0 24px var(--glow-soft); }
+.head h1{ font-size:24px; }
+.head .sub{ color:var(--dim2); font-size:12.5px; margin-top:2px; }
+.status{ margin-left:auto; display:flex; align-items:center; gap:7px; font-size:12px; color:var(--dim); background:var(--panel2); border:1px solid var(--line); padding:7px 12px; border-radius:999px; white-space:nowrap; }
+.dot{ width:8px; height:8px; border-radius:50%; background:var(--dim2); display:inline-block; }
+.dot.live{ background:var(--green); box-shadow:0 0 10px rgba(55,201,119,.7); }
+.dot.off{ background:var(--red); }
+.grid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:12px; }
+.grid2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+@media (max-width:720px){ .grid3{ grid-template-columns:1fr; } .grid2{ grid-template-columns:1fr; } }
+.card{ background:linear-gradient(180deg, var(--panel2), var(--panel)); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+.card.big{ border-color:rgba(77,178,255,.35); box-shadow:0 0 34px -10px var(--glow); }
+.label{ font-size:12.5px; color:var(--dim); display:flex; align-items:center; gap:8px; }
+.num{ font-family:'Oswald',sans-serif; font-weight:700; font-size:38px; margin-top:6px; line-height:1.1; }
+.num.accent{ color:var(--accent); }
+.card h3{ font-size:14px; color:var(--dim); font-weight:500; margin-bottom:14px; }
+.bars{ display:flex; align-items:flex-end; gap:10px; height:150px; }
+.bar{ flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; }
+.bar .v{ font-size:12px; color:var(--dim); margin-bottom:5px; }
+.bar .col{ width:100%; border-radius:5px; background:var(--glow-soft); border:1px solid rgba(77,178,255,.25); min-height:3px; }
+.bar.today .col{ background:linear-gradient(180deg, var(--accent), var(--accent2)); border-color:transparent; box-shadow:0 0 16px -2px var(--glow); }
+.days{ display:flex; gap:10px; margin-top:8px; }
+.days div{ flex:1; text-align:center; font-size:12px; color:var(--dim2); }
+.row{ margin-bottom:12px; font-size:13.5px; }
+.row:last-child{ margin-bottom:0; }
+.row .top{ display:flex; justify-content:space-between; gap:10px; }
+.row .top span:last-child{ color:var(--dim); white-space:nowrap; }
+.track{ height:5px; border-radius:3px; background:var(--panel3); margin-top:6px; }
+.track i{ display:block; height:5px; border-radius:3px; background:linear-gradient(90deg, var(--accent2), var(--accent)); }
+.empty{ color:var(--dim2); font-size:13px; font-style:italic; }
+.kv{ display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:13.5px; }
+.kv:last-child{ border-bottom:none; }
+.kv span:last-child{ color:var(--dim); }
+.ignore{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:18px; padding:14px 18px; background:var(--panel2); border:1px solid var(--line); border-radius:14px; font-size:13px; color:var(--dim); }
+.ignore b{ display:block; color:var(--text); font-weight:700; margin-bottom:2px; font-size:13.5px; }
+.sw{ position:relative; width:46px; height:26px; flex-shrink:0; border-radius:999px; border:none; cursor:pointer; background:var(--panel3); box-shadow:inset 0 0 0 1px var(--line); }
+.sw::after{ content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:var(--dim2); transition:transform .18s ease, background .18s ease; }
+.sw.on{ background:linear-gradient(180deg, var(--accent), var(--accent2)); }
+.sw.on::after{ transform:translateX(20px); background:#fff; }
+.foot{ margin-top:16px; text-align:center; font-size:11.5px; color:var(--dim2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <img src="icon-192.png" alt="">
+    <div>
+      <h1>Статистика</h1>
+      <div class="sub">КХЛ SEASON 4 · обновляется в реальном времени</div>
+    </div>
+    <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">Подключение…</span></div>
+  </div>
+
+  <div class="grid3">
+    <div class="card big">
+      <div class="label"><span class="dot live"></span>Сейчас на сайте</div>
+      <div class="num accent" id="nOnline">0</div>
+    </div>
+    <div class="card">
+      <div class="label">Всего заходов</div>
+      <div class="num" id="nVisits">0</div>
+    </div>
+    <div class="card">
+      <div class="label">Людей всего</div>
+      <div class="num" id="nUnique">0</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px;">
+    <h3>Заходы за 7 дней</h3>
+    <div class="bars" id="bars"></div>
+    <div class="days" id="days"></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>Популярные разделы</h3>
+      <div id="pagesList"></div>
+    </div>
+    <div class="card">
+      <h3>С чего заходят</h3>
+      <div id="devicesList"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Любимые клубы</h3>
+    <div id="clubsList"></div>
+  </div>
+
+  <div class="ignore">
+    <div><b>Не считать мои заходы с этого устройства</b>Чтобы твои проверки сайта не попадали в цифры.</div>
+    <button class="sw" id="ignoreSw" aria-label="Не считать мои заходы"></button>
+  </div>
+  <div class="foot">Заход считается один раз за открытие сайта. Человек определяется по браузеру: с телефона и с компьютера один и тот же посетитель посчитается дважды.</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { firebaseConfig } from "./firebase-config.js";
+
+/* Названия клубов для списка «Любимые клубы». Ключ — id клуба из index.html.
+   Если поменяешь id клуба на сайте, поменяй его и здесь. */
+const CLUB_NAMES = {
+  cska:"ЦСКА", tor:"Торпедо", ska:"СКА", loko:"Локомотив", dmn:"Динамо (Минск)", spa:"Спартак",
+  dmsk:"Динамо (Москва)", sochi:"ХК Сочи", sev:"Северсталь", sha:"Шанхай Дрэгонс", lada:"Лада",
+  akb:"Ак Барс", met:"Металлург", tra:"Трактор", ava:"Авангард", avto:"Автомобилист", barys:"Барыс",
+  sy:"Салават Юлаев", amur:"Амур", nef:"Нефтехимик", sibir:"Сибирь", adm:"Адмирал"
+};
+const PAGE_NAMES = { home:"Меню", schedule:"Расписание", standings:"Турнирная таблица", clubs:"Клубы", media:"Медиа" };
+
+const $ = (id) => document.getElementById(id);
+const fmt = (n) => Number(n || 0).toLocaleString("ru-RU");
+const num = (v) => (typeof v === "number" && isFinite(v) ? v : 0);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+function dayKey(d){
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+function listHtml(items, emptyText){
+  const total = items.reduce((s, it) => s + it.value, 0);
+  if (!items.length || !total) return `<div class="empty">${emptyText}</div>`;
+  return items.map((it) => {
+    const pct = Math.round((it.value / total) * 100);
+    return `<div class="row"><div class="top"><span>${esc(it.name)}</span><span>${pct}% · ${fmt(it.value)}</span></div><div class="track"><i style="width:${pct}%"></i></div></div>`;
+  }).join("");
+}
+
+function render(data){
+  data = data || {};
+  const total = data.total || {};
+  $("nOnline").textContent = fmt(Object.keys(data.online || {}).length);
+  $("nVisits").textContent = fmt(num(total.visits));
+  $("nUnique").textContent = fmt(num(total.unique));
+
+  // заходы за 7 дней
+  const daily = data.daily || {};
+  const days = [];
+  for (let i = 6; i >= 0; i--){
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push({ key: dayKey(d), label: d.toLocaleDateString("ru-RU", { weekday:"short" }), value: num(daily[dayKey(d)]), today: i === 0 });
+  }
+  const max = Math.max(1, ...days.map((d) => d.value));
+  $("bars").innerHTML = days.map((d) =>
+    `<div class="bar${d.today ? " today" : ""}"><div class="v">${fmt(d.value)}</div><div class="col" style="height:${Math.round((d.value / max) * 100)}px"></div></div>`
+  ).join("");
+  $("days").innerHTML = days.map((d) => `<div>${esc(d.label)}</div>`).join("");
+
+  // разделы
+  const pages = Object.entries(data.pages || {})
+    .map(([k, v]) => ({ name: PAGE_NAMES[k] || k, value: num(v) }))
+    .filter((p) => p.value > 0).sort((a, b) => b.value - a.value);
+  $("pagesList").innerHTML = listHtml(pages, "Пока нет данных");
+
+  // устройства + установки
+  const dev = data.devices || {};
+  const mobile = num(dev.mobile), desktop = num(dev.desktop), all = mobile + desktop;
+  const pct = (v) => (all ? Math.round((v / all) * 100) + "%" : "—");
+  $("devicesList").innerHTML =
+    `<div class="kv"><span>Телефон</span><span>${pct(mobile)} · ${fmt(mobile)}</span></div>` +
+    `<div class="kv"><span>Компьютер</span><span>${pct(desktop)} · ${fmt(desktop)}</span></div>` +
+    `<div class="kv"><span>Установили как приложение</span><span>${fmt(num(total.installs))}</span></div>`;
+
+  // любимые клубы (топ 5)
+  const clubs = Object.entries(data.clubs || {})
+    .map(([k, v]) => ({ name: CLUB_NAMES[k] || k, value: num(v) }))
+    .filter((c) => c.value > 0).sort((a, b) => b.value - a.value).slice(0, 5);
+  $("clubsList").innerHTML = listHtml(clubs, "Пока никто не выбрал любимый клуб");
+}
+
+function setStatus(ok){
+  $("statusDot").className = "dot " + (ok ? "live" : "off");
+  $("statusText").textContent = ok ? "На связи" : "Нет связи с базой";
+}
+
+// переключатель «не считать мои заходы»
+const IGNORE_KEY = "khl_stats_ignore";
+function ignoreOn(){ try{ return localStorage.getItem(IGNORE_KEY) === "1"; }catch(e){ return false; } }
+function paintIgnore(){ $("ignoreSw").classList.toggle("on", ignoreOn()); }
+$("ignoreSw").addEventListener("click", () => {
+  try{
+    if (ignoreOn()) localStorage.removeItem(IGNORE_KEY); else localStorage.setItem(IGNORE_KEY, "1");
+  }catch(e){}
+  paintIgnore();
+});
+paintIgnore();
+
+render({});
+try{
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  onValue(ref(db, ".info/connected"), (snap) => setStatus(snap.val() === true));
+  onValue(ref(db), (snap) => render(snap.val()), () => setStatus(false));
+}catch(e){
+  setStatus(false);
+}
+
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>

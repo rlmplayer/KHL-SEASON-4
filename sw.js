@@ -1,6 +1,6 @@
 /* Service worker: нужен, чтобы сайт устанавливался как приложение и открывался даже при плохой сети.
    Стратегия: сначала сеть (чтобы ваши правки сразу были видны), если сети нет — берём сохранённую копию. */
-const CACHE = "khl-season4-v1";
+const CACHE = "khl-season4-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (e) => {
@@ -15,6 +15,7 @@ self.addEventListener("activate", (e) => {
 });
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
+  if (new URL(e.request.url).origin !== location.origin) return;   // запросы к Firebase и шрифтам не трогаем
   e.respondWith(
     fetch(e.request)
       .then((res) => {

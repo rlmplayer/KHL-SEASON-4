@@ -1,0 +1,16 @@
+{
+  "name": "КХЛ SEASON 4 — Статистика",
+  "short_name": "Статистика",
+  "description": "Статистика посещений сайта КХЛ SEASON 4",
+  "lang": "ru",
+  "id": "./stats.html",
+  "start_url": "./stats.html",
+  "scope": "./stats.html",
+  "display": "standalone",
+  "background_color": "#04060a",
+  "theme_color": "#04060a",
+  "icons": [
+    { "src": "stats-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "stats-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
